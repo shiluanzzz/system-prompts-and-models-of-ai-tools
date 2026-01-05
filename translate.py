@@ -232,6 +232,23 @@ def main():
     if args.dry_run:
         print("DRY RUN - No translations will be performed")
         print("-" * 50)
+
+        # Count files by status
+        needs_translation = []
+        already_exists = []
+
+        for f in files:
+            output = get_translation_output_path(f)
+            if output.exists():
+                already_exists.append(f)
+            else:
+                needs_translation.append(f)
+
+        # Print summary
+        print(f"Status: {len(needs_translation)} need translation, {len(already_exists)} already translated")
+        print("-" * 50)
+
+        # Print all files
         for f in files:
             output = get_translation_output_path(f)
             status = "exists" if output.exists() else "needs translation"

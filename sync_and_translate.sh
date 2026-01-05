@@ -18,10 +18,15 @@ git merge upstream/main -m "Merge upstream updates"
 
 # 检查是否有新文件需要翻译
 echo "📝 检查需要翻译的文件..."
-poetry run python translate.py . --dry-run > translation_needed.txt
+poetry run python translate.py . --dry-run > translation_needed.txt 2>&1
 
-# 计算需要翻译的文件数
-files_to_translate=$(grep "needs translation" translation_needed.txt | wc -l)
+# 从状态行提取需要翻译的文件数
+files_to_translate=$(grep "Status:" translation_needed.txt | grep -o "[0-9]* need translation" | grep -o "[0-9]*")
+
+# 如果没有找到状态行，尝试旧的方法
+if [ -z "$files_to_translate" ]; then
+    files_to_translate=$(grep "needs translation" translation_needed.txt | wc -l | tr -d ' ')
+fi
 
 if [ $files_to_translate -gt 0 ]; then
     echo "📚 发现 $files_to_translate 个文件需要翻译"
