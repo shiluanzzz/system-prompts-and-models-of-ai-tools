@@ -36,7 +36,7 @@ poetry install
 ```env
 OPENAI_API_KEY=your-api-key-here
 OPENAI_API_BASE=https://your-api-base.com/v1  # 可选，如果使用代理
-OPENAI_MODEL=gpt-3.5-turbo  # 默认模型
+OPENAI_MODEL=openai/gpt-5.2-chat  # 默认模型
 ```
 
 ## 使用方法
@@ -53,13 +53,13 @@ OPENAI_MODEL=gpt-3.5-turbo  # 默认模型
 poetry run python translate.py . --dry-run
 
 # 翻译所有文件
-poetry run python translate.py . -m gpt-3.5-turbo
+poetry run python translate.py . -m openai/gpt-5.2-chat
 
 # 翻译特定目录
-poetry run python translate.py "Cursor Prompts" -m gpt-3.5-turbo
+poetry run python translate.py "Cursor Prompts" -m openai/gpt-5.2-chat
 
 # 翻译单个文件
-poetry run python translate.py "path/to/file.txt" -m gpt-3.5-turbo
+poetry run python translate.py "path/to/file.txt" -m openai/gpt-5.2-chat
 ```
 
 ### 使用 GitHub Actions（自动化）
@@ -89,7 +89,7 @@ poetry run python translate.py --help
 ```
 
 选项：
-- `-m, --model`：指定模型（gpt-3.5-turbo, gpt-4o-mini, gpt-4o）
+- `-m, --model`：指定模型（openai/gpt-5.2-chat, gpt-3.5-turbo, gpt-4o-mini）
 - `-f, --force`：强制重新翻译已存在的文件
 - `--dry-run`：预览模式，不实际翻译
 - `-e, --ext`：指定文件扩展名（默认 .md .txt）
@@ -123,7 +123,7 @@ git commit -m "Resolve merge conflicts"
 ## 注意事项
 
 1. **API 配额**：注意 OpenAI API 的使用配额和费用
-2. **翻译质量**：建议使用 gpt-3.5-turbo 进行初次翻译，重要文件可用 gpt-4o 提升质量
+2. **翻译质量**：建议使用 openai/gpt-5.2-chat 进行翻译，获得最佳质量
 3. **文件跳过**：已存在 `*_zh.md` 或 `*_zh.txt` 的文件会自动跳过
 4. **批量翻译**：大量文件建议分批翻译，避免 API 限流
 

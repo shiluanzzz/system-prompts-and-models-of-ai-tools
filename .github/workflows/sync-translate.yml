@@ -7,12 +7,12 @@ on:
       model:
         description: 'Translation model'
         required: true
-        default: 'gpt-3.5-turbo'
+        default: 'openai/gpt-5.2-chat'
         type: choice
         options:
+          - openai/gpt-5.2-chat
           - gpt-3.5-turbo
           - gpt-4o-mini
-          - gpt-4o
 
   # 定时运行（每周一早上8点）
   schedule:
@@ -83,7 +83,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_BASE: ${{ secrets.OPENAI_API_BASE }}
         run: |
-          MODEL="${{ github.event.inputs.model || 'gpt-3.5-turbo' }}"
+          MODEL="${{ github.event.inputs.model || 'openai/gpt-5.2-chat' }}"
           echo "🚀 Translating with model: $MODEL"
           poetry run python translate.py . -m $MODEL
 
@@ -96,7 +96,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            MODEL="${{ github.event.inputs.model || 'gpt-3.5-turbo' }}"
+            MODEL="${{ github.event.inputs.model || 'openai/gpt-5.2-chat' }}"
             git commit -m "Add Chinese translations
 
           Translated using $MODEL

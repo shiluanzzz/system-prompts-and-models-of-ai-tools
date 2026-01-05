@@ -32,16 +32,16 @@ if [ $files_to_translate -gt 0 ]; then
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         # 选择模型
         echo "请选择翻译模型："
-        echo "1) gpt-3.5-turbo (快速，成本低)"
-        echo "2) gpt-4o-mini (质量较好)"
-        echo "3) gpt-4o (最佳质量，成本高)"
+        echo "1) openai/gpt-5.2-chat (推荐)"
+        echo "2) gpt-3.5-turbo (快速，成本低)"
+        echo "3) gpt-4o-mini (质量较好)"
         read -p "选择 (1-3): " model_choice
 
         case $model_choice in
-            1) MODEL="gpt-3.5-turbo";;
-            2) MODEL="gpt-4o-mini";;
-            3) MODEL="gpt-4o";;
-            *) MODEL="gpt-3.5-turbo";;
+            1) MODEL="openai/gpt-5.2-chat";;
+            2) MODEL="gpt-3.5-turbo";;
+            3) MODEL="gpt-4o-mini";;
+            *) MODEL="openai/gpt-5.2-chat";;
         esac
 
         echo "🚀 使用 $MODEL 开始翻译..."
