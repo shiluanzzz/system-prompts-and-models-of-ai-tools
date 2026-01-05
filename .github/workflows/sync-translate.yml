@@ -1,0 +1,123 @@
+name: Sync and Translate
+
+on:
+  # 手动触发
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'Translation model'
+        required: true
+        default: 'gpt-3.5-turbo'
+        type: choice
+        options:
+          - gpt-3.5-turbo
+          - gpt-4o-mini
+          - gpt-4o
+
+  # 定时运行（每周一早上8点）
+  schedule:
+    - cron: '0 0 * * 1'  # UTC时间，相当于北京时间周一早上8点
+
+jobs:
+  sync-and-translate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools || true
+          git remote -v
+
+      - name: Fetch upstream
+        run: git fetch upstream
+
+      - name: Merge upstream changes
+        run: |
+          git checkout main
+          git merge upstream/main -m "Merge upstream updates [skip ci]" || echo "No changes to merge"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Check for files to translate
+        id: check_translation
+        run: |
+          poetry run python translate.py . --dry-run > translation_status.txt
+          files_count=$(grep "needs translation" translation_status.txt | wc -l)
+          echo "files_to_translate=$files_count" >> $GITHUB_OUTPUT
+
+          # 显示需要翻译的文件
+          if [ $files_count -gt 0 ]; then
+            echo "📝 Files needing translation:"
+            grep "needs translation" translation_status.txt
+          else
+            echo "✨ No new files to translate"
+          fi
+
+      - name: Translate files
+        if: steps.check_translation.outputs.files_to_translate > 0
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_BASE: ${{ secrets.OPENAI_API_BASE }}
+        run: |
+          MODEL="${{ github.event.inputs.model || 'gpt-3.5-turbo' }}"
+          echo "🚀 Translating with model: $MODEL"
+          poetry run python translate.py . -m $MODEL
+
+      - name: Commit translations
+        if: steps.check_translation.outputs.files_to_translate > 0
+        run: |
+          git add *_zh.md *_zh.txt
+          git diff --cached --name-only
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            MODEL="${{ github.event.inputs.model || 'gpt-3.5-turbo' }}"
+            git commit -m "Add Chinese translations
+
+          Translated using $MODEL
+          Files translated: ${{ steps.check_translation.outputs.files_to_translate }}"
+          fi
+
+      - name: Push changes
+        if: steps.check_translation.outputs.files_to_translate > 0
+        run: |
+          git push origin main || echo "No changes to push"
+
+      - name: Create summary
+        run: |
+          echo "## 同步和翻译报告" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.check_translation.outputs.files_to_translate }}" -gt 0 ]; then
+            echo "✅ 成功翻译了 ${{ steps.check_translation.outputs.files_to_translate }} 个文件" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 翻译的文件：" >> $GITHUB_STEP_SUMMARY
+            grep "needs translation" translation_status.txt | sed 's/\[needs translation\]//' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✨ 没有新文件需要翻译" >> $GITHUB_STEP_SUMMARY
+          fi

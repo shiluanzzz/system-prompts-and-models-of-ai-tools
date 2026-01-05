@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "prompt-translator"
+version = "0.1.0"
+description = "Translate AI system prompts from English to Simplified Chinese"
+authors = ["Your Name <your.email@example.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.9"
+openai = "^1.0.0"
+python-dotenv = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
