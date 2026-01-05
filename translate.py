@@ -256,6 +256,25 @@ def main():
             print(f"  [{status}] {rel_path}")
         return
 
+    # Count files by status before translating
+    needs_translation = []
+    already_exists = []
+
+    for f in files:
+        output = get_translation_output_path(f)
+        if output.exists() and not args.force:
+            already_exists.append(f)
+        else:
+            needs_translation.append(f)
+
+    # Print summary
+    print(f"Status: {len(needs_translation)} need translation, {len(already_exists)} already translated")
+    print("-" * 50)
+
+    if len(needs_translation) == 0:
+        print("✨ No files need translation")
+        return
+
     # Translate files
     translated_count = 0
     skipped_count = 0
